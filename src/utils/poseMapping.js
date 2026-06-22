@@ -2,6 +2,8 @@ function getKeypoint(keypoints, name) {
   return keypoints.find((kp) => kp.name === name);
 }
 
+export { getKeypoint };
+
 export function midpoint(a, b) {
   return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 }

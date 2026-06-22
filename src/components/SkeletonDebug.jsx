@@ -13,22 +13,35 @@ function scaleKeypoint(kp, srcW, srcH, dstW, dstH) {
   };
 }
 
-export default function SkeletonDebug({ keypoints, visible, srcW, srcH, dstW, dstH }) {
+export default function SkeletonDebug({
+  keypoints,
+  visible,
+  srcW,
+  srcH,
+  dstW,
+  dstH,
+  compact = false,
+  className = 'skeleton-overlay',
+}) {
   if (!visible || !keypoints?.length) return null;
 
   const scaled = keypoints.map((kp) => scaleKeypoint(kp, srcW, srcH, dstW, dstH));
+  const strokeWidth = compact ? 1.5 : 2;
+  const jointRadius = compact ? 3 : 5;
+  const minScore = 0.3;
 
   return (
     <svg
       viewBox={`0 0 ${dstW} ${dstH}`}
-      width={dstW}
-      height={dstH}
-      className="skeleton-overlay"
+      width={compact ? '100%' : dstW}
+      height={compact ? '100%' : dstH}
+      className={className}
+      preserveAspectRatio="xMidYMid meet"
     >
       {MOVENET_CONNECTIONS.map(([a, b]) => {
         const kpA = getKeypoint(scaled, a);
         const kpB = getKeypoint(scaled, b);
-        if (!kpA || !kpB || kpA.score < 0.3 || kpB.score < 0.3) return null;
+        if (!kpA || !kpB || kpA.score < minScore || kpB.score < minScore) return null;
         return (
           <line
             key={`${a}-${b}`}
@@ -37,8 +50,8 @@ export default function SkeletonDebug({ keypoints, visible, srcW, srcH, dstW, ds
             x2={kpB.x}
             y2={kpB.y}
             stroke="#22d3ee"
-            strokeWidth={2}
-            opacity={0.7}
+            strokeWidth={strokeWidth}
+            opacity={0.85}
           />
         );
       })}
@@ -47,9 +60,9 @@ export default function SkeletonDebug({ keypoints, visible, srcW, srcH, dstW, ds
           key={kp.name}
           cx={kp.x}
           cy={kp.y}
-          r={5}
+          r={jointRadius}
           fill={kp.score > 0.6 ? '#22d3ee' : '#f59e0b'}
-          opacity={Math.max(kp.score, 0.3)}
+          opacity={Math.max(kp.score, minScore)}
         />
       ))}
     </svg>
