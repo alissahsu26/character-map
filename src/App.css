@@ -17,6 +17,38 @@
   gap: 0.75rem;
 }
 
+.view-mode-switch {
+  display: inline-flex;
+  border: 1px solid #2e2e42;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1a1a2e;
+}
+
+.view-mode-btn {
+  padding: 0.4rem 0.85rem;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.view-mode-btn + .view-mode-btn {
+  border-left: 1px solid #2e2e42;
+}
+
+.view-mode-btn:hover {
+  color: #e5e7eb;
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.view-mode-btn.active {
+  color: #f3f4f6;
+  background: #8b5cf6;
+}
+
 .debug-toggles {
   display: flex;
   align-items: center;

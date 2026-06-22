@@ -73,35 +73,48 @@ export default function App() {
             />
             Camera skeleton
           </label>
-          <label className="skeleton-toggle">
-            <input
-              type="checkbox"
-              checked={showBoneHelpers}
-              onChange={(e) => setShowBoneHelpers(e.target.checked)}
-            />
-            Avatar bones
-          </label>
-          <label className="skeleton-toggle">
-            <input
-              type="checkbox"
-              checked={showLandmarks}
-              onChange={(e) => setShowLandmarks(e.target.checked)}
-            />
-            Landmarks
-          </label>
+          {isAvatarMode && (
+            <>
+              <label className="skeleton-toggle">
+                <input
+                  type="checkbox"
+                  checked={showBoneHelpers}
+                  onChange={(e) => setShowBoneHelpers(e.target.checked)}
+                />
+                Avatar bones
+              </label>
+              <label className="skeleton-toggle">
+                <input
+                  type="checkbox"
+                  checked={showLandmarks}
+                  onChange={(e) => setShowLandmarks(e.target.checked)}
+                />
+                Landmarks
+              </label>
+            </>
+          )}
         </div>
       </header>
 
       <main className="stage-container">
-        <div className="stage mirror">
-          <ThreeScene
-            keypointsRef={keypointsRef}
-            videoSizeRef={videoSizeRef}
-            trackingStateRef={trackingStateRef}
-            showBoneHelpers={showBoneHelpers}
-            showLandmarks={showLandmarks}
-          />
-          <TrackingDebugPanel stateRef={trackingStateRef} fpsRef={fpsRef} />
+        <div className={`stage${isAvatarMode ? ' mirror' : ''}`}>
+          {isAvatarMode ? (
+            <ThreeScene
+              keypointsRef={keypointsRef}
+              videoSizeRef={videoSizeRef}
+              trackingStateRef={trackingStateRef}
+              showBoneHelpers={showBoneHelpers}
+              showLandmarks={showLandmarks}
+            />
+          ) : (
+            <PuppetStage
+              keypointsRef={keypointsRef}
+              videoSizeRef={videoSizeRef}
+              width={STAGE_WIDTH}
+              height={STAGE_HEIGHT}
+            />
+          )}
+          {isAvatarMode && <TrackingDebugPanel stateRef={trackingStateRef} fpsRef={fpsRef} />}
           <KeypointsOverlay
             keypointsRef={keypointsRef}
             videoSizeRef={videoSizeRef}

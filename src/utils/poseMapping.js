@@ -16,6 +16,19 @@ export function angleBetween(a, b) {
   return Math.atan2(b.y - a.y, b.x - a.x);
 }
 
+/** Stable in-plane tilt from two points (handles mirrored / flipped left-right). */
+export function planarTiltAngle(left, right) {
+  if (!left || !right) return 0;
+  let dx = right.x - left.x;
+  let dy = right.y - left.y;
+  if (Math.abs(dx) < 1e-4) return 0;
+  if (dx < 0) {
+    dx = -dx;
+    dy = -dy;
+  }
+  return Math.atan2(dy, dx);
+}
+
 function scalePoint(point, srcW, srcH, dstW, dstH) {
   return {
     x: (point.x / srcW) * dstW,
@@ -61,7 +74,7 @@ export function mapPoseToPuppet(keypoints, srcW, srcH, dstW, dstH) {
     leftEye && rightEye ? midpoint(leftEye, rightEye) : nose || { x: srcW / 2, y: srcH / 4 };
   const headPos = nose || eyeMid;
   const headAngle =
-    leftEye && rightEye ? Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x) : 0;
+    leftEye && rightEye ? planarTiltAngle(leftEye, rightEye) : 0;
 
   const shoulderMid =
     leftShoulder && rightShoulder
@@ -75,7 +88,7 @@ export function mapPoseToPuppet(keypoints, srcW, srcH, dstW, dstH) {
   const torsoHeight = distance(shoulderMid, hipMid) || srcH * 0.2;
   const torsoAngle =
     leftShoulder && rightShoulder
-      ? angleBetween(leftShoulder, rightShoulder)
+      ? planarTiltAngle(leftShoulder, rightShoulder)
       : 0;
 
   const leftArm = armSegment(leftShoulder, leftElbow, leftWrist);
