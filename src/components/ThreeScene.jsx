@@ -14,6 +14,7 @@ export default function ThreeScene({
   trackingStateRef,
   showBoneHelpers = false,
   showLandmarks = false,
+  trackingEnabled = true,
 }) {
   const avatarBonesRef = useRef(null);
   const [avatarRoot, setAvatarRoot] = useState(null);
@@ -41,6 +42,7 @@ export default function ThreeScene({
         videoSizeRef={videoSizeRef}
         avatarBonesRef={avatarBonesRef}
         trackingStateRef={trackingStateRef}
+        enabled={trackingEnabled}
       />
       <AvatarBoneHelpers root={avatarRoot} visible={showBoneHelpers} />
       <LandmarkMarkers

@@ -18,7 +18,7 @@ function isInterruptedPlayError(err) {
   );
 }
 
-export function usePoseTracking() {
+export function usePoseTracking(externalFpsRef) {
   const videoRef = useRef(null);
   const detectorRef = useRef(null);
   const handLandmarkerRef = useRef(null);
@@ -29,6 +29,10 @@ export function usePoseTracking() {
   const rafRef = useRef(null);
   const mountedRef = useRef(true);
   const initSessionRef = useRef(0);
+  const internalFpsRef = useRef(0);
+  const fpsRef = externalFpsRef ?? internalFpsRef;
+  const frameCountRef = useRef(0);
+  const lastFpsTimeRef = useRef(performance.now());
 
   const [poses, setPoses] = useState([]);
   const [hands, setHands] = useState([]);
@@ -156,6 +160,7 @@ export function usePoseTracking() {
               );
               if (result.landmarks?.length) {
                 const detectedHands = result.landmarks.map((landmarks, i) => ({
+                  id: i,
                   handedness: result.handednesses?.[i]?.[0]?.categoryName ?? `hand_${i}`,
                   landmarks: landmarks.map((lm) => ({
                     x: lm.x * frameW,
@@ -173,6 +178,13 @@ export function usePoseTracking() {
           }
 
           if (mountedRef.current) {
+            frameCountRef.current += 1;
+            const fpsNow = performance.now();
+            if (fpsNow - lastFpsTimeRef.current >= 1000) {
+              fpsRef.current = frameCountRef.current;
+              frameCountRef.current = 0;
+              lastFpsTimeRef.current = fpsNow;
+            }
             rafRef.current = requestAnimationFrame(detect);
           }
         };
@@ -217,5 +229,5 @@ export function usePoseTracking() {
     };
   }, []);
 
-  return { videoRef, poses, hands, isReady, error, videoSize };
+  return { videoRef, poses, hands, isReady, error, videoSize, fpsRef };
 }

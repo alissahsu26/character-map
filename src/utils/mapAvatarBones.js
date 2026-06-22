@@ -8,6 +8,10 @@ const BONE_SEARCH = {
   leftForearm: [/^forearml/i, /^forearm\.l/i, /^lowerarml/i, /^leftforearm$/i, /^mixamorig:leftforearm$/i],
   rightUpperArm: [/^upper_armr/i, /^upper_arm\.r/i, /^upperarmr/i, /^rightarm$/i, /^mixamorig:rightarm$/i],
   rightForearm: [/^forearmr/i, /^forearm\.r/i, /^lowerarmr/i, /^rightforearm$/i, /^mixamorig:rightforearm$/i],
+  leftUpperLeg: [/^thigh\.l/i, /^thighl/i, /^upper_leg\.l/i, /^leftupleg$/i, /^mixamorig:leftupleg$/i],
+  leftLowerLeg: [/^shin\.l/i, /^shinl/i, /^lower_leg\.l/i, /^leftleg$/i, /^mixamorig:leftleg$/i],
+  rightUpperLeg: [/^thigh\.r/i, /^thighr/i, /^upper_leg\.r/i, /^rightupleg$/i, /^mixamorig:rightupleg$/i],
+  rightLowerLeg: [/^shin\.r/i, /^shinr/i, /^lower_leg\.r/i, /^rightleg$/i, /^mixamorig:rightleg$/i],
 };
 
 const CHILD_HINTS = {
@@ -18,6 +22,10 @@ const CHILD_HINTS = {
   leftForearm: [/^handl/i, /^hand\.l/i],
   rightUpperArm: [/^forearmr/i, /^forearm\.r/i],
   rightForearm: [/^handr/i, /^hand\.r/i],
+  leftUpperLeg: [/^shin\.l/i, /^shinl/i, /^shin\.L/i],
+  leftLowerLeg: [/^foot\.l/i, /^footl/i, /^foot\.L/i],
+  rightUpperLeg: [/^shin\.r/i, /^shinr/i, /^shin\.R/i],
+  rightLowerLeg: [/^foot\.r/i, /^footr/i, /^foot\.R/i],
 };
 
 function findBone(boneMap, patterns) {
@@ -119,6 +127,8 @@ export function mapAvatarBones(root) {
       spine: slots.spine.bone.name,
       leftUpperArm: slots.leftUpperArm.bone.name,
       rightUpperArm: slots.rightUpperArm.bone.name,
+      leftUpperLeg: slots.leftUpperLeg?.bone?.name ?? '(missing)',
+      rightUpperLeg: slots.rightUpperLeg?.bone?.name ?? '(missing)',
     });
   }
 

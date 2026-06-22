@@ -2,6 +2,12 @@ import { useEffect, useRef } from 'react';
 import { usePoseTracking } from '../hooks/usePoseTracking';
 import SkeletonDebug from './SkeletonDebug';
 import HandSkeletonDebug from './HandSkeletonDebug';
+import {
+  derivedLandmarksForDebug,
+  extractHeadNeckLandmarks,
+  HEAD_NECK_CONNECTIONS,
+  mergePoseKeypointsForDisplay,
+} from '../utils/headNeckLandmarks';
 
 const STAGE_WIDTH = 640;
 const STAGE_HEIGHT = 480;
@@ -12,13 +18,19 @@ export default function PoseTracker({
   onPoseUpdate,
   onHandUpdate,
   onStatusChange,
-  showSkeleton,
-  showHands,
+  fpsRef,
+  showCameraSkeleton,
 }) {
-  const { videoRef, poses, hands, isReady, error, videoSize } = usePoseTracking();
+  const { videoRef, poses, hands, isReady, error, videoSize } = usePoseTracking(fpsRef);
   const onPoseUpdateRef = useRef(onPoseUpdate);
   const onHandUpdateRef = useRef(onHandUpdate);
   const keypoints = poses[0]?.keypoints;
+  const displayKeypoints = keypoints?.length
+    ? mergePoseKeypointsForDisplay(
+        keypoints,
+        derivedLandmarksForDebug(extractHeadNeckLandmarks(keypoints, { swapHands: true }))
+      )
+    : keypoints;
 
   onPoseUpdateRef.current = onPoseUpdate;
   onHandUpdateRef.current = onHandUpdate;
@@ -49,18 +61,19 @@ export default function PoseTracker({
           height={PREVIEW_HEIGHT}
         />
         <SkeletonDebug
-          keypoints={keypoints}
-          visible={showSkeleton && isReady}
+          keypoints={displayKeypoints}
+          visible={showCameraSkeleton && isReady}
           srcW={videoSize.width}
           srcH={videoSize.height}
           dstW={PREVIEW_WIDTH}
           dstH={PREVIEW_HEIGHT}
           compact
           className="webcam-skeleton-overlay"
+          extraConnections={HEAD_NECK_CONNECTIONS}
         />
         <HandSkeletonDebug
           hands={hands}
-          visible={showHands && isReady}
+          visible={showCameraSkeleton && isReady}
           srcW={videoSize.width}
           srcH={videoSize.height}
           dstW={PREVIEW_WIDTH}

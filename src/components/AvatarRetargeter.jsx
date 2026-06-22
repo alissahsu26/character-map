@@ -6,8 +6,10 @@ export default function AvatarRetargeter({
   videoSizeRef,
   avatarBonesRef,
   trackingStateRef,
+  enabled = true,
 }) {
   useFrame(() => {
+    if (!enabled) return;
     const bones = avatarBonesRef.current;
     const keypoints = keypointsRef.current;
     const videoSize = videoSizeRef.current;

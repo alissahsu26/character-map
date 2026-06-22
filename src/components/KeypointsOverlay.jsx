@@ -1,5 +1,11 @@
 import { useEffect, useReducer } from 'react';
 import SkeletonDebug from './SkeletonDebug';
+import {
+  derivedLandmarksForDebug,
+  extractHeadNeckLandmarks,
+  HEAD_NECK_CONNECTIONS,
+  mergePoseKeypointsForDisplay,
+} from '../utils/headNeckLandmarks';
 
 /** Reads keypoints from a ref and re-renders at display refresh rate (no parent setState per frame). */
 export default function KeypointsOverlay({
@@ -26,15 +32,21 @@ export default function KeypointsOverlay({
 
   const keypoints = keypointsRef.current;
   const videoSize = videoSizeRef.current;
+  const landmarks = extractHeadNeckLandmarks(keypoints, { swapHands: true });
+  const displayKeypoints = mergePoseKeypointsForDisplay(
+    keypoints,
+    derivedLandmarksForDebug(landmarks)
+  );
 
   return (
     <SkeletonDebug
-      keypoints={keypoints}
+      keypoints={displayKeypoints}
       visible={visible}
       srcW={videoSize.width}
       srcH={videoSize.height}
       dstW={dstW}
       dstH={dstH}
+      extraConnections={HEAD_NECK_CONNECTIONS}
     />
   );
 }

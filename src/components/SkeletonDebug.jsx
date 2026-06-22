@@ -22,13 +22,22 @@ export default function SkeletonDebug({
   dstH,
   compact = false,
   className = 'skeleton-overlay',
+  extraConnections = [],
 }) {
   if (!visible || !keypoints?.length) return null;
 
   const scaled = keypoints.map((kp) => scaleKeypoint(kp, srcW, srcH, dstW, dstH));
+  const connections = [...MOVENET_CONNECTIONS, ...extraConnections];
   const strokeWidth = compact ? 1.5 : 2;
-  const jointRadius = compact ? 3 : 5;
+  const jointRadius = compact ? 2.5 : 4;
   const minScore = 0.3;
+  const isDerived = (name) =>
+    name === 'face_center' ||
+    name === 'neck_top' ||
+    name === 'neck_base' ||
+    name === 'eye_mid' ||
+    name === 'ear_mid' ||
+    name === 'chin_proxy';
 
   return (
     <svg
@@ -38,7 +47,7 @@ export default function SkeletonDebug({
       className={className}
       preserveAspectRatio="xMidYMid meet"
     >
-      {MOVENET_CONNECTIONS.map(([a, b]) => {
+      {connections.map(([a, b]) => {
         const kpA = getKeypoint(scaled, a);
         const kpB = getKeypoint(scaled, b);
         if (!kpA || !kpB || kpA.score < minScore || kpB.score < minScore) return null;
@@ -49,9 +58,9 @@ export default function SkeletonDebug({
             y1={kpA.y}
             x2={kpB.x}
             y2={kpB.y}
-            stroke="#22d3ee"
+            stroke="#7dd3fc"
             strokeWidth={strokeWidth}
-            opacity={0.85}
+            opacity={0.9}
           />
         );
       })}
@@ -61,8 +70,8 @@ export default function SkeletonDebug({
           cx={kp.x}
           cy={kp.y}
           r={jointRadius}
-          fill={kp.score > 0.6 ? '#22d3ee' : '#f59e0b'}
-          opacity={Math.max(kp.score, minScore)}
+          fill={isDerived(kp.name) ? '#c4b5fd' : '#facc15'}
+          opacity={isDerived(kp.name) ? 0.9 : Math.max(kp.score, minScore)}
         />
       ))}
     </svg>

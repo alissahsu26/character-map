@@ -70,7 +70,7 @@ export default function HandSkeletonDebug({
     >
       {hands.map((hand, i) => (
         <HandSkeleton
-          key={hand.handedness ?? i}
+          key={hand.id ?? `hand-${i}`}
           landmarks={hand.landmarks}
           srcW={srcW}
           srcH={srcH}

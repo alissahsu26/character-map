@@ -80,7 +80,7 @@
 .tracking-debug-panel {
   position: absolute;
   top: 0.75rem;
-  left: 0.75rem;
+  right: 0.75rem;
   z-index: 10;
   padding: 0.6rem 0.75rem;
   background: rgba(15, 15, 26, 0.85);
@@ -90,6 +90,8 @@
   line-height: 1.5;
   pointer-events: none;
   backdrop-filter: blur(4px);
+  /* Counter the parent .mirror flip so labels stay readable. */
+  transform: scaleX(-1);
 }
 
 .tracking-mode {
@@ -115,6 +117,126 @@
 .tracking-inactive {
   font-size: 0.75rem;
   opacity: 0.7;
+}
+
+.tracking-fps {
+  margin-bottom: 0.35rem;
+  color: #9ca3af;
+  font-variant-numeric: tabular-nums;
+}
+
+.tracking-landmarks {
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid #2e2e42;
+  color: #9ca3af;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  max-width: 220px;
+  word-break: break-word;
+}
+
+.tracking-landmarks-label {
+  color: #c4b5fd;
+}
+
+.calibration-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(15, 15, 26, 0.92);
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+}
+
+.calibration-card {
+  max-width: 420px;
+  width: 100%;
+  padding: 1.5rem;
+  background: #1a1a2e;
+  border: 1px solid #2e2e42;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.calibration-card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  color: #f3f4f6;
+}
+
+.calibration-tips {
+  margin: 0 0 1.25rem;
+  padding-left: 1.2rem;
+  color: #d1d5db;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.calibration-tips li {
+  margin-bottom: 0.35rem;
+}
+
+.calibration-prompt {
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #2e2e42;
+  background: rgba(46, 46, 66, 0.35);
+  margin-bottom: 1rem;
+}
+
+.calibration-prompt--active {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.calibration-action {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  text-align: center;
+}
+
+.calibration-progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #2e2e42;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.calibration-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+  transition: width 0.1s linear;
+}
+
+.calibration-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.calibration-skip {
+  width: 100%;
+  padding: 0.55rem 1rem;
+  border: 1px solid #2e2e42;
+  border-radius: 8px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.calibration-skip:hover {
+  border-color: #8b5cf6;
+  color: #e5e7eb;
 }
 
 .puppet-svg,

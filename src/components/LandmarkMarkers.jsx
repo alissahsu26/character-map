@@ -9,6 +9,12 @@ const TRACKED = new Set([
   'right_eye',
   'left_ear',
   'right_ear',
+  'face_center',
+  'eye_mid',
+  'ear_mid',
+  'neck_base',
+  'neck_top',
+  'chin_proxy',
   'left_shoulder',
   'right_shoulder',
   'left_elbow',
@@ -67,7 +73,9 @@ export default function LandmarkMarkers({ keypointsRef, videoSizeRef, visible })
       if (!mesh) continue;
       mesh.visible = true;
       mesh.position.copy(m.position);
-      mesh.material.color.set(m.score > 0.6 ? '#22d3ee' : '#f59e0b');
+      mesh.material.color.set(
+        m.derived ? '#a78bfa' : m.score > 0.6 ? '#22d3ee' : '#f59e0b'
+      );
     }
 
     for (const [name, mesh] of meshesRef.current) {

@@ -1,4 +1,6 @@
-const MIN_SCORE = 0.3;
+import { LANDMARK_CONFIDENCE_THRESHOLD } from './poseConstants';
+
+const MIN_SCORE = LANDMARK_CONFIDENCE_THRESHOLD;
 const MAX_JUMP_RATIO = 0.28;
 
 class OneEuroFilter {
@@ -60,7 +62,7 @@ export class KeypointSmoother {
       if (kp.score < MIN_SCORE) {
         this.filters[i].x.reset();
         this.filters[i].y.reset();
-        return kp;
+        return { ...kp, score: 0 };
       }
 
       const prev = previous?.[i];

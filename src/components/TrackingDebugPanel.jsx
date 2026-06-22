@@ -7,6 +7,13 @@ const MODE_LABELS = {
   PARTIAL: 'Partial',
 };
 
+const DEFAULT_ACTIVE = {
+  head: false,
+  torso: false,
+  leftArm: false,
+  rightArm: false,
+};
+
 function PartRow({ label, active }) {
   return (
     <div className="tracking-part-row">
@@ -18,45 +25,57 @@ function PartRow({ label, active }) {
   );
 }
 
-export default function TrackingDebugPanel({ stateRef }) {
-  const [state, setState] = useState(null);
+export default function TrackingDebugPanel({ stateRef, fpsRef }) {
+  const [view, setView] = useState({
+    mode: null,
+    active: DEFAULT_ACTIVE,
+    landmarks: [],
+    fps: 0,
+  });
 
   useEffect(() => {
     let rafId = 0;
-    let prevKey = '';
 
     const tick = () => {
       const next = stateRef.current;
-      if (next?.mode) {
-        const key = `${next.mode}:${next.active.head}:${next.active.torso}:${next.active.leftArm}:${next.active.rightArm}`;
-        if (key !== prevKey) {
-          prevKey = key;
-          setState({ mode: next.mode, active: { ...next.active } });
-        }
-      } else if (prevKey) {
-        prevKey = '';
-        setState(null);
-      }
+      setView({
+        mode: next?.mode ?? null,
+        active: next?.active
+          ? {
+              head: next.active.head,
+              torso: next.active.torso,
+              leftArm: next.active.leftArm,
+              rightArm: next.active.rightArm,
+            }
+          : DEFAULT_ACTIVE,
+        landmarks: next?.activeLandmarks ?? [],
+        fps: fpsRef?.current ?? 0,
+      });
       rafId = requestAnimationFrame(tick);
     };
 
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [stateRef]);
-
-  if (!state?.mode) return null;
+  }, [stateRef, fpsRef]);
 
   return (
     <div className="tracking-debug-panel">
+      <div className="tracking-fps">FPS: {view.fps}</div>
       <div className="tracking-mode">
-        Mode: <strong>{MODE_LABELS[state.mode] ?? state.mode}</strong>
+        Mode: <strong>{view.mode ? (MODE_LABELS[view.mode] ?? view.mode) : '—'}</strong>
       </div>
       <div className="tracking-parts">
-        <PartRow label="Head" active={state.active.head} />
-        <PartRow label="Torso" active={state.active.torso} />
-        <PartRow label="Left Arm" active={state.active.leftArm} />
-        <PartRow label="Right Arm" active={state.active.rightArm} />
+        <PartRow label="Head" active={view.active.head} />
+        <PartRow label="Torso" active={view.active.torso} />
+        <PartRow label="Left Arm" active={view.active.leftArm} />
+        <PartRow label="Right Arm" active={view.active.rightArm} />
       </div>
+      {view.landmarks.length > 0 && (
+        <div className="tracking-landmarks">
+          <span className="tracking-landmarks-label">Landmarks:</span>{' '}
+          {view.landmarks.join(', ')}
+        </div>
+      )}
     </div>
   );
 }
