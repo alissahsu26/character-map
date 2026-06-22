@@ -32,7 +32,7 @@ export default function KeypointsOverlay({
 
   const keypoints = keypointsRef.current;
   const videoSize = videoSizeRef.current;
-  const landmarks = extractHeadNeckLandmarks(keypoints, { swapHands: true });
+  const landmarks = extractHeadNeckLandmarks(keypoints, { swapHands: false });
   const displayKeypoints = mergePoseKeypointsForDisplay(
     keypoints,
     derivedLandmarksForDebug(landmarks)

@@ -1,11 +1,16 @@
 import { useCallback, useRef, useState } from 'react';
 import ThreeScene from './components/ThreeScene';
+import PuppetStage from './components/PuppetStage';
 import KeypointsOverlay from './components/KeypointsOverlay';
 import HandOverlay from './components/HandOverlay';
 import TrackingDebugPanel from './components/TrackingDebugPanel';
-import CalibrationScreen from './components/CalibrationScreen';
 import PoseTracker, { STAGE_WIDTH, STAGE_HEIGHT } from './components/PoseTracker';
 import './App.css';
+
+export const VIEW_MODES = {
+  AVATAR: 'avatar',
+  PUPPET: 'puppet',
+};
 
 export default function App() {
   const keypointsRef = useRef([]);
@@ -13,11 +18,13 @@ export default function App() {
   const videoSizeRef = useRef({ width: 640, height: 480 });
   const trackingStateRef = useRef(null);
   const fpsRef = useRef(0);
+  const [viewMode, setViewMode] = useState(VIEW_MODES.AVATAR);
   const [showCameraSkeleton, setShowCameraSkeleton] = useState(true);
   const [showBoneHelpers, setShowBoneHelpers] = useState(false);
   const [showLandmarks, setShowLandmarks] = useState(false);
   const [status, setStatus] = useState({ isReady: false, error: null });
-  const [calibrated, setCalibrated] = useState(false);
+
+  const isAvatarMode = viewMode === VIEW_MODES.AVATAR;
 
   const handlePoseUpdate = useCallback((_puppet, keypoints, size) => {
     keypointsRef.current = keypoints;
@@ -41,6 +48,22 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1>Character Puppet</h1>
+        <div className="view-mode-switch" role="group" aria-label="View mode">
+          <button
+            type="button"
+            className={`view-mode-btn ${viewMode === VIEW_MODES.PUPPET ? 'active' : ''}`}
+            onClick={() => setViewMode(VIEW_MODES.PUPPET)}
+          >
+            Puppet
+          </button>
+          <button
+            type="button"
+            className={`view-mode-btn ${viewMode === VIEW_MODES.AVATAR ? 'active' : ''}`}
+            onClick={() => setViewMode(VIEW_MODES.AVATAR)}
+          >
+            Charlie
+          </button>
+        </div>
         <div className="debug-toggles">
           <label className="skeleton-toggle">
             <input
@@ -77,7 +100,6 @@ export default function App() {
             trackingStateRef={trackingStateRef}
             showBoneHelpers={showBoneHelpers}
             showLandmarks={showLandmarks}
-            trackingEnabled={calibrated}
           />
           <TrackingDebugPanel stateRef={trackingStateRef} fpsRef={fpsRef} />
           <KeypointsOverlay
@@ -95,14 +117,6 @@ export default function App() {
             dstH={STAGE_HEIGHT}
           />
         </div>
-
-        {status.isReady && !calibrated && !status.error && (
-          <CalibrationScreen
-            keypointsRef={keypointsRef}
-            videoSizeRef={videoSizeRef}
-            onComplete={() => setCalibrated(true)}
-          />
-        )}
 
         {!status.isReady && !status.error && (
           <div className="loading-overlay">

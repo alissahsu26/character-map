@@ -134,7 +134,7 @@ export function usePoseTracking(externalFpsRef) {
           try {
             const estimated = await detectorRef.current.estimatePoses(video, {
               maxPoses: 1,
-              flipHorizontal: false,
+              flipHorizontal: true,
             });
             if (estimated.length > 0) {
               const raw = estimated[0].keypoints;
