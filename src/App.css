@@ -1,0 +1,174 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0f0f1a;
+  color: #e5e7eb;
+  position: relative;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #2e2e42;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #f3f4f6;
+}
+
+.skeleton-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.skeleton-toggle input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #8b5cf6;
+}
+
+.stage-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  position: relative;
+}
+
+.stage {
+  position: relative;
+  width: 640px;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #1a1a2e;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
+  border: 1px solid #2e2e42;
+}
+
+.mirror {
+  transform: scaleX(-1);
+}
+
+.puppet-svg,
+.skeleton-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.skeleton-overlay {
+  pointer-events: none;
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: rgba(15, 15, 26, 0.85);
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.loading-overlay p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 0.95rem;
+}
+
+.error-text {
+  color: #f87171 !important;
+  max-width: 320px;
+  text-align: center;
+}
+
+.loading-overlay button {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: #8b5cf6;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.loading-overlay button:hover {
+  background: #7c3aed;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #2e2e42;
+  border-top-color: #8b5cf6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pose-tracker {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 20;
+}
+
+.webcam-preview {
+  width: 160px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #2e2e42;
+  transform: scaleX(-1);
+  background: #000;
+}
+
+.tracker-status {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  right: 0;
+  width: 200px;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  background: #1a1a2e;
+  border: 1px solid #2e2e42;
+  border-radius: 6px;
+  color: #9ca3af;
+}
+
+.tracker-error {
+  color: #f87171;
+}
+
+@media (max-width: 700px) {
+  .stage {
+    width: 100%;
+  }
+
+  .webcam-preview {
+    width: 120px;
+    height: 90px;
+  }
+}
