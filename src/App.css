@@ -77,6 +77,46 @@
   transform: scaleX(-1);
 }
 
+.tracking-debug-panel {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  padding: 0.6rem 0.75rem;
+  background: rgba(15, 15, 26, 0.85);
+  border: 1px solid #2e2e42;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.tracking-mode {
+  margin-bottom: 0.35rem;
+  color: #c4b5fd;
+}
+
+.tracking-mode strong {
+  color: #e5e7eb;
+}
+
+.tracking-part-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.25rem;
+  color: #d1d5db;
+}
+
+.tracking-active {
+  font-size: 0.75rem;
+}
+
+.tracking-inactive {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
 .puppet-svg,
 .skeleton-overlay {
   position: absolute;

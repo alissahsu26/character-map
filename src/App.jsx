@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import ThreeScene from './components/ThreeScene';
 import KeypointsOverlay from './components/KeypointsOverlay';
 import HandOverlay from './components/HandOverlay';
+import TrackingDebugPanel from './components/TrackingDebugPanel';
 import PoseTracker, { STAGE_WIDTH, STAGE_HEIGHT } from './components/PoseTracker';
 import './App.css';
 
@@ -9,6 +10,7 @@ export default function App() {
   const keypointsRef = useRef([]);
   const handsRef = useRef([]);
   const videoSizeRef = useRef({ width: 640, height: 480 });
+  const trackingStateRef = useRef(null);
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [showHands, setShowHands] = useState(true);
   const [showBoneHelpers, setShowBoneHelpers] = useState(false);
@@ -78,9 +80,11 @@ export default function App() {
           <ThreeScene
             keypointsRef={keypointsRef}
             videoSizeRef={videoSizeRef}
+            trackingStateRef={trackingStateRef}
             showBoneHelpers={showBoneHelpers}
             showLandmarks={showLandmarks}
           />
+          <TrackingDebugPanel stateRef={trackingStateRef} />
           <KeypointsOverlay
             keypointsRef={keypointsRef}
             videoSizeRef={videoSizeRef}

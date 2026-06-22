@@ -107,7 +107,7 @@ export function mapAvatarBones(root) {
   }
 
   const isReady = missing.length === 0;
-  const bindFrame = captureAvatarBindFrame(slots);
+  const bindFrame = captureAvatarBindFrame(slots, boneMap);
 
   if (missing.length) {
     console.warn('[mapAvatarBones] Missing or incomplete bones:', missing);
@@ -133,7 +133,7 @@ export function mapAvatarBones(root) {
   };
 }
 
-function captureAvatarBindFrame(slots) {
+function captureAvatarBindFrame(slots, boneMap) {
   const spineBind = slots.spine?.bind;
   const headBind = slots.head?.bind;
   const poseToAvatar = new Quaternion();
@@ -146,5 +146,31 @@ function captureAvatarBindFrame(slots) {
   const headForward = headBind?.restWorldDir?.clone() ?? new Vector3(0, 0, -1);
   if (headForward.lengthSq() > 0) headForward.normalize();
 
-  return { poseToAvatar, neutralUp, headForward };
+  const leftEye = findBone(boneMap, [/^lefteye/i]);
+  const rightEye = findBone(boneMap, [/^righteye/i]);
+  let headRight = new Vector3(1, 0, 0);
+  if (leftEye && rightEye) {
+    leftEye.updateWorldMatrix(true, true);
+    rightEye.updateWorldMatrix(true, true);
+    const lp = new Vector3().setFromMatrixPosition(leftEye.matrixWorld);
+    const rp = new Vector3().setFromMatrixPosition(rightEye.matrixWorld);
+    headRight = rp.sub(lp);
+    if (headRight.lengthSq() > 1e-8) headRight.normalize();
+  }
+
+  const headUp = new Vector3().crossVectors(headForward, headRight).normalize();
+  headRight.crossVectors(headUp, headForward).normalize();
+
+  const headRestWorldQuat = new Quaternion().setFromRotationMatrix(
+    new Matrix4().makeBasis(headRight, headUp, headForward.clone().negate())
+  );
+
+  return {
+    poseToAvatar,
+    neutralUp,
+    headForward,
+    headRight,
+    headUp,
+    headRestWorldQuat,
+  };
 }

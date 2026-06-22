@@ -11,6 +11,7 @@ const CAMERA_TARGET = [0, 0.9, 0];
 export default function ThreeScene({
   keypointsRef,
   videoSizeRef,
+  trackingStateRef,
   showBoneHelpers = false,
   showLandmarks = false,
 }) {
@@ -39,6 +40,7 @@ export default function ThreeScene({
         keypointsRef={keypointsRef}
         videoSizeRef={videoSizeRef}
         avatarBonesRef={avatarBonesRef}
+        trackingStateRef={trackingStateRef}
       />
       <AvatarBoneHelpers root={avatarRoot} visible={showBoneHelpers} />
       <LandmarkMarkers
