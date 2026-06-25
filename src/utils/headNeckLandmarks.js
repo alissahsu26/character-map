@@ -129,12 +129,16 @@ export function extractHeadNeckLandmarks(
         : null;
 
   const hasNose = scoreOk(nose, minConfidence);
-  const hasSides = !!leftSide && !!rightSide;
-  const hasEyes = scoreOk(leftEye, minConfidence) && scoreOk(rightEye, minConfidence);
-  const valid = hasNose && (hasSides || hasEyes);
+  // Valid as long as ANY facial signal is usable (faceCenter is the weighted
+  // fusion across nose/eyes/ears, so it's non-null iff at least one of them
+  // passed minConfidence). This keeps head tracking alive on partial
+  // visibility (e.g. a profile view with only one eye/ear) instead of
+  // requiring the nose specifically.
+  const valid = !!faceCenter;
 
   return {
     valid,
+    hasNose,
     nose,
     leftEye,
     rightEye,
@@ -177,15 +181,22 @@ export function computeHeadNeckAngles(
     (landmarks.leftSide && landmarks.rightSide
       ? midpoint(landmarks.leftSide, landmarks.rightSide)
       : null);
-  if (!faceMid || !landmarks.nose) return null;
+  if (!faceMid) return null;
+
+  // Yaw/pitch are normally driven by the nose offset from the fused face
+  // center. When the nose itself is occluded or low-confidence (common
+  // mid-turn or when looking down), fall back to faceMid itself so the
+  // offset is zero — a safe neutral default — rather than losing head
+  // tracking entirely. Roll (below) never depended on the nose.
+  const yawAnchor = landmarks.hasNose ? landmarks.nose : faceMid;
 
   const yaw = clamp(
-    ((landmarks.nose.x - faceMid.x) / frameW) * mirrorSign * yawGain,
+    ((yawAnchor.x - faceMid.x) / frameW) * mirrorSign * yawGain,
     -0.65,
     0.65
   );
 
-  const pitchNose = ((faceMid.y - landmarks.nose.y) / frameH) * pitchGain;
+  const pitchNose = ((faceMid.y - yawAnchor.y) / frameH) * pitchGain;
   const pitchChin =
     landmarks.chinProxy && landmarks.eyeMid
       ? ((landmarks.eyeMid.y - landmarks.chinProxy.y) / frameH) * pitchGain * 0.6

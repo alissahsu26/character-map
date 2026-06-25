@@ -22,6 +22,7 @@ export default function App() {
   const [showCameraSkeleton, setShowCameraSkeleton] = useState(true);
   const [showBoneHelpers, setShowBoneHelpers] = useState(false);
   const [showLandmarks, setShowLandmarks] = useState(false);
+  const [showPuppetDebug, setShowPuppetDebug] = useState(false);
   const [status, setStatus] = useState({ isReady: false, error: null });
 
   const isAvatarMode = viewMode === VIEW_MODES.AVATAR;
@@ -73,7 +74,7 @@ export default function App() {
             />
             Camera skeleton
           </label>
-          {isAvatarMode && (
+          {isAvatarMode ? (
             <>
               <label className="skeleton-toggle">
                 <input
@@ -92,6 +93,15 @@ export default function App() {
                 Landmarks
               </label>
             </>
+          ) : (
+            <label className="skeleton-toggle">
+              <input
+                type="checkbox"
+                checked={showPuppetDebug}
+                onChange={(e) => setShowPuppetDebug(e.target.checked)}
+              />
+              Show data
+            </label>
           )}
         </div>
       </header>
@@ -112,6 +122,7 @@ export default function App() {
               videoSizeRef={videoSizeRef}
               width={STAGE_WIDTH}
               height={STAGE_HEIGHT}
+              showDebug={showPuppetDebug}
             />
           )}
           {isAvatarMode && <TrackingDebugPanel stateRef={trackingStateRef} fpsRef={fpsRef} />}

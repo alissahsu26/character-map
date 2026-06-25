@@ -28,6 +28,12 @@ const PITCH_GAIN = 4.5;
 const PITCH_NEUTRAL = 0.12;
 const ROTATION_DEADZONE = 0.025;
 const LOG_INTERVAL_MS = 3000;
+// When head tracking is fully lost (no facial landmarks at all, not just a
+// brief dip), ease the head/neck back toward their rest pose instead of
+// freezing mid-rotation, so a sustained occlusion settles into a neutral
+// look rather than getting stuck staring sideways.
+const LOST_HEAD_EASE = 0.05;
+const LOST_NECK_EASE = 0.04;
 
 const ROTATION_LIMITS = {
   head: { yaw: 0.55, pitch: 0.45, roll: 0.4 },
@@ -131,6 +137,17 @@ function holdBoneRotation(bone) {
   }
 }
 
+function easeBoneToRest(bone, bind, alpha) {
+  if (!bone || !bind) return;
+  bone.quaternion.slerp(bind.restQuaternion, alpha);
+  getBoneState(bone).lastQuat.copy(bone.quaternion);
+}
+
+function easeHeadToNeutral(avatarBones) {
+  easeBoneToRest(avatarBones.neck?.bone, avatarBones.neck?.bind, LOST_NECK_EASE);
+  easeBoneToRest(avatarBones.head?.bone, avatarBones.head?.bind, LOST_HEAD_EASE);
+}
+
 function applyDirectionToBone(
   bone,
   bind,
@@ -191,29 +208,36 @@ function buildTorsoFrame(keypoints, frameH) {
   const rh = getKeypoint(keypoints, 'right_hip');
 
   const scale = 2.2 / frameH;
-  const shouldersOk = scoreOk(ls) && scoreOk(rs);
+  const lsOk = scoreOk(ls);
+  const rsOk = scoreOk(rs);
+  const shouldersOk = lsOk && rsOk;
+  const oneShoulderOk = lsOk || rsOk;
   const hipsOk = scoreOk(lh) && scoreOk(rh);
   const headOk = hasHeadNeckLandmarks(keypoints, MIN_CONFIDENCE);
+  const hipMid = hipsOk ? midpoint(lh, rh) : null;
 
-  if (!shouldersOk && !headOk) return null;
+  if (!oneShoulderOk && !headOk) return null;
 
   let shoulderMid = null;
-  let hipMid = null;
   let up = null;
 
   if (shouldersOk) {
     shoulderMid = midpoint(ls, rs);
-    if (hipsOk) {
-      hipMid = midpoint(lh, rh);
-      up = poseDirection(hipMid, shoulderMid, scale);
-    } else {
-      up = _defaultUp.clone();
-    }
-  } else {
+  } else if (oneShoulderOk) {
+    // Only one shoulder is visible (e.g. occluded by an arm or out of
+    // frame). Using the visible shoulder still gives a usable lean
+    // direction once paired with the hips — far better than dropping all
+    // torso/lean info, which previously starved neck/head tracking of body
+    // lean compensation whenever a single shoulder dipped below threshold.
+    shoulderMid = lsOk ? ls : rs;
+  }
+
+  if (shoulderMid && hipMid) {
+    up = poseDirection(hipMid, shoulderMid, scale);
+  } else if (!shoulderMid && headOk) {
     const headFrame = getHeadNeckFrame(keypoints);
     shoulderMid = headFrame.faceCenter ?? headFrame.eyeMid;
     if (!shoulderMid) return null;
-    up = _defaultUp.clone();
   }
 
   if (!up) up = _defaultUp.clone();
@@ -272,16 +296,14 @@ function applyHeadTracking(
   { active = true, neckActive = true } = {}
 ) {
   if (!active) {
-    holdBoneRotation(avatarBones.neck?.bone);
-    holdBoneRotation(avatarBones.head?.bone);
+    easeHeadToNeutral(avatarBones);
     return false;
   }
 
   const landmarks = getHeadNeckFrame(keypoints);
   const angles = computeFaceAngles(keypoints, videoSize);
   if (!angles || !landmarks.valid) {
-    holdBoneRotation(avatarBones.neck?.bone);
-    holdBoneRotation(avatarBones.head?.bone);
+    easeHeadToNeutral(avatarBones);
     return false;
   }
 
