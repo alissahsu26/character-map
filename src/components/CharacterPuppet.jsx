@@ -206,7 +206,7 @@ export default function CharacterPuppet({ puppet, width, height }) {
         x={torso.cx - torso.width / 2}
         y={torso.cy - torso.height / 2}
         width={torso.width}
-        height={torso.height}
+        height={torso.height * 3}
         rx={torso.width * 0.15}
         fill="#8b5cf6"
         stroke="#1a1a2e"
@@ -223,8 +223,8 @@ export default function CharacterPuppet({ puppet, width, height }) {
           stroke="#1a1a2e"
           strokeWidth={2}
         />
-        <circle cx={head.cx - head.radius * 0.3} cy={head.cy - head.radius * 0.15} r={4} fill="#1a1a2e" />
-        <circle cx={head.cx + head.radius * 0.3} cy={head.cy - head.radius * 0.15} r={4} fill="#1a1a2e" />
+        <circle cx={head.cx - head.radius * 1.5} cy={head.cy - head.radius * 1.5} r={4} fill="#1a1a2e" />
+        <circle cx={head.cx + head.radius * 1.5} cy={head.cy - head.radius * 1.5} r={4} fill="#1a1a2e" />
         <path
           d={`M ${head.cx - head.radius * 0.25} ${head.cy + head.radius * 0.2}
               Q ${head.cx} ${head.cy + head.radius * 0.45} ${head.cx + head.radius * 0.25} ${head.cy + head.radius * 0.2}`}

@@ -5,11 +5,17 @@ import { LANDMARK_CONFIDENCE_THRESHOLD } from './poseConstants';
 // flicker when a point's score hovers right around the threshold (e.g. a
 // partially turned head or a partially occluded limb).
 const ACQUIRE_SCORE = LANDMARK_CONFIDENCE_THRESHOLD;
-const RELEASE_SCORE = 0.32;
+const RELEASE_SCORE = 0.28;
+// Arms (especially the camera-facing side) dip below the global threshold more
+// often; use a lower band so they stay trusted once acquired.
+const ARM_ACQUIRE_SCORE = 0.38;
+const ARM_RELEASE_SCORE = 0.18;
+const ARM_INDICES = new Set([5, 6, 7, 8, 9, 10]); // shoulders → wrists
 // Bridge brief dropouts (motion blur, a hand passing in front, a single bad
 // detector frame) by coasting on the last known velocity instead of
 // instantly snapping the bone to "missing".
 const COAST_MS = 320;
+const ARM_COAST_MS = 480;
 const MAX_JUMP_RATIO = 0.28;
 
 class OneEuroFilter {
@@ -77,10 +83,14 @@ export class KeypointSmoother {
 
     return raw.map((kp, i) => {
       const track = this.track[i];
+      const isArm = ARM_INDICES.has(i);
+      const acquireScore = isArm ? ARM_ACQUIRE_SCORE : ACQUIRE_SCORE;
+      const releaseScore = isArm ? ARM_RELEASE_SCORE : RELEASE_SCORE;
+      const coastMs = isArm ? ARM_COAST_MS : COAST_MS;
 
-      if (kp.score >= ACQUIRE_SCORE) {
+      if (kp.score >= acquireScore) {
         track.trusted = true;
-      } else if (kp.score < RELEASE_SCORE) {
+      } else if (kp.score < releaseScore) {
         track.trusted = false;
       }
       // Between RELEASE_SCORE and ACQUIRE_SCORE: keep whatever trust state we
@@ -88,17 +98,17 @@ export class KeypointSmoother {
 
       if (!track.trusted) {
         const sinceGood = t - track.lastGoodT;
-        if (track.lastGoodT && sinceGood <= COAST_MS) {
+        if (track.lastGoodT && sinceGood <= coastMs) {
           // Coast through the dropout: extrapolate from the last known
           // velocity, decaying it to zero so motion eases to a stop instead
           // of jumping when real tracking resumes.
-          const decay = 1 - sinceGood / COAST_MS;
+          const decay = 1 - sinceGood / coastMs;
           const dt = sinceGood / 1000;
           return {
             ...kp,
             x: track.lastX + track.vx * dt * decay,
             y: track.lastY + track.vy * dt * decay,
-            score: ACQUIRE_SCORE,
+            score: acquireScore,
           };
         }
         this.filters[i].x.reset();
@@ -107,12 +117,12 @@ export class KeypointSmoother {
       }
 
       const prev = previous?.[i];
-      if (prev && prev.score >= ACQUIRE_SCORE) {
+      if (prev && prev.score >= acquireScore) {
         const jump = Math.hypot(kp.x - prev.x, kp.y - prev.y);
         if (jump > maxJump) {
           return {
             ...prev,
-            score: Math.max(prev.score * 0.92, ACQUIRE_SCORE),
+            score: Math.max(prev.score * 0.92, acquireScore),
           };
         }
       }
@@ -129,7 +139,7 @@ export class KeypointSmoother {
       track.lastY = fy;
       track.lastGoodT = t;
 
-      return { ...kp, x: fx, y: fy, score: Math.max(kp.score, ACQUIRE_SCORE) };
+      return { ...kp, x: fx, y: fy, score: Math.max(kp.score, acquireScore) };
     });
   }
 }

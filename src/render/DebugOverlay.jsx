@@ -50,12 +50,35 @@ function Row({ label, value, bar = false }) {
   );
 }
 
-export default function DebugOverlay({ bodyState, controls }) {
-  if (!bodyState && !controls) return null;
+function fmtConf(c) {
+  if (!c) return '—';
+  return `S${(c.shoulder ?? 0).toFixed(2)} E${(c.elbow ?? 0).toFixed(2)} W${(c.wrist ?? 0).toFixed(2)}`;
+}
+
+export default function DebugOverlay({ bodyState, controls, estimatorDebug }) {
+  if (!bodyState && !controls && !estimatorDebug) return null;
 
   return (
     <div style={S.panel}>
       <div style={{ fontWeight: 'bold', marginBottom: 4 }}>Debug</div>
+
+      {estimatorDebug && (
+        <>
+          <div style={S.section}>Estimator</div>
+          <Row label="raw leftArmAngle"      value={estimatorDebug.rawLeftArmAngle} />
+          <Row label="smoothed leftArmAngle" value={estimatorDebug.smoothedLeftArmAngle} />
+          <Row label="raw torsoLean"         value={estimatorDebug.rawTorsoLean} />
+          <Row label="smoothed torsoLean"    value={estimatorDebug.smoothedTorsoLean} />
+          <div style={S.row}>
+            <span style={S.label}>L conf</span>
+            <span style={S.val}>{fmtConf(estimatorDebug.leftConfidence)}</span>
+          </div>
+          <div style={S.row}>
+            <span style={S.label}>R conf</span>
+            <span style={S.val}>{fmtConf(estimatorDebug.rightConfidence)}</span>
+          </div>
+        </>
+      )}
 
       <div style={S.section}>BodyState</div>
       <Row label="confidence"    value={bodyState?.confidence}    bar />

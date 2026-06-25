@@ -1,0 +1,203 @@
+{
+  "units": "pixels",
+  "note": "Starting rig config. Tune in calibration mode.",
+  "root": {
+    "x": 0,
+    "y": 0,
+    "scale": 1
+  },
+  "parts": {
+    "torso": {
+      "asset": "torso.png",
+      "anchor": [
+        0.5,
+        0.1
+      ],
+      "position": [
+        0,
+        0
+      ],
+      "z": 10
+    },
+    "neck": {
+      "asset": "neck.png",
+      "anchor": [
+        0.5,
+        0.0
+      ],
+      "position": [
+        0,
+        -55
+      ],
+      "z": 12
+    },
+    "head": {
+      "asset": "head.png",
+      "anchor": [
+        0.5,
+        0.72
+      ],
+      "position": [
+        0,
+        -80
+      ],
+      "z": 20
+    },
+    "hair": {
+      "asset": "hair.png",
+      "anchor": [
+        0.5,
+        0.65
+      ],
+      "position": [
+        5,
+        -95
+      ],
+      "z": 22
+    },
+    "upperArmL": {
+      "asset": "upperArmL.png",
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "position": [
+        -105,
+        10
+      ],
+      "z": 8
+    },
+    "lowerArmL": {
+      "asset": "lowerArmL.png",
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "position": [
+        0,
+        170
+      ],
+      "z": 7
+    },
+    "handL": {
+      "asset": "handL.png",
+      "anchor": [
+        0.5,
+        0.05
+      ],
+      "position": [
+        0,
+        175
+      ],
+      "z": 6
+    },
+    "upperArmR": {
+      "asset": "upperArmR.png",
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "position": [
+        105,
+        10
+      ],
+      "z": 8
+    },
+    "lowerArmR": {
+      "asset": "lowerArmR.png",
+      "anchor": [
+        0.5,
+        0.08
+      ],
+      "position": [
+        0,
+        170
+      ],
+      "z": 7
+    },
+    "handR": {
+      "asset": "handR.png",
+      "anchor": [
+        0.5,
+        0.05
+      ],
+      "position": [
+        0,
+        175
+      ],
+      "z": 6
+    },
+    "upperLegL": {
+      "asset": "upperLegL.png",
+      "anchor": [
+        0.5,
+        0.05
+      ],
+      "position": [
+        -45,
+        215
+      ],
+      "z": 5
+    },
+    "lowerLegL": {
+      "asset": "lowerLegL.png",
+      "anchor": [
+        0.5,
+        0.05
+      ],
+      "position": [
+        0,
+        220
+      ],
+      "z": 4
+    },
+    "footL": {
+      "asset": "footL.png",
+      "anchor": [
+        0.5,
+        0.3
+      ],
+      "position": [
+        0,
+        225
+      ],
+      "z": 6
+    },
+    "upperLegR": {
+      "asset": "upperLegR.png",
+      "anchor": [
+        0.5,
+        0.05
+      ],
+      "position": [
+        45,
+        215
+      ],
+      "z": 5
+    },
+    "lowerLegR": {
+      "asset": "lowerLegR.png",
+      "anchor": [
+        0.5,
+        0.05
+      ],
+      "position": [
+        0,
+        220
+      ],
+      "z": 4
+    },
+    "footR": {
+      "asset": "footR.png",
+      "anchor": [
+        0.5,
+        0.3
+      ],
+      "position": [
+        0,
+        225
+      ],
+      "z": 6
+    }
+  }
+}

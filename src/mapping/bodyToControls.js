@@ -13,16 +13,22 @@ export function bodyStateToControls(bodyState) {
     torsoLean,
     leftArmRaise,
     rightArmRaise,
+    leftArmReach,
+    rightArmReach,
+    leftArmAngle,
+    rightArmAngle,
+    leftLowerArmAngle,
+    rightLowerArmAngle,
     motionEnergy,
     confidence,
     shoulders,
     wrists,
   } = bodyState;
 
-  function armReach(shoulder, wrist) {
+  function fallbackReach(shoulder, wrist) {
     if (!shoulder || !wrist) return 0;
     const dist = Math.hypot(wrist.x - shoulder.x, wrist.y - shoulder.y);
-    const ref = shoulders.width || 0.2;
+    const ref = shoulders?.width || 0.2;
     return clamp(dist / (ref * 2), 0, 1);
   }
 
@@ -31,8 +37,12 @@ export function bodyStateToControls(bodyState) {
     torsoLean:     torsoLean * 0.7,
     leftArmRaise:  clamp(leftArmRaise,  0, 1),
     rightArmRaise: clamp(rightArmRaise, 0, 1),
-    leftArmReach:  armReach(shoulders.left,  wrists.left),
-    rightArmReach: armReach(shoulders.right, wrists.right),
+    leftArmReach:  leftArmReach ?? fallbackReach(shoulders?.left, wrists?.left),
+    rightArmReach: rightArmReach ?? fallbackReach(shoulders?.right, wrists?.right),
+    leftArmAngle,
+    rightArmAngle,
+    leftLowerArmAngle,
+    rightLowerArmAngle,
     bodyBounce:    motionEnergy * 0.5,
     motionEnergy,
     auraIntensity: clamp(motionEnergy * 1.5, 0, 1),

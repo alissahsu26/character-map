@@ -1,2 +1,2 @@
-/** Minimum landmark score (MoveNet visibility/presence) for retargeting. */
-export const LANDMARK_CONFIDENCE_THRESHOLD = 0.6;
+/** Minimum landmark visibility/presence score for retargeting. */
+export const LANDMARK_CONFIDENCE_THRESHOLD = 0.5;

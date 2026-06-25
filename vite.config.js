@@ -14,6 +14,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['@tensorflow/tfjs', '@tensorflow/tfjs-backend-webgl'],
+    include: ['@mediapipe/tasks-vision'],
   },
 })
