@@ -4,6 +4,7 @@ import DebugOverlay from '../render/DebugOverlay';
 import { BodyStateEstimator } from '../body/BodyStateEstimator';
 import { bodyStateToControls } from '../mapping/bodyToControls';
 import { buildPuppetRig } from '../character/puppetRig';
+import { PuppetRigSmoother } from '../character/puppetRigSmoothing';
 import { PUPPET_IMAGE_NUDGES, logPuppetImageNudges } from '../character/puppetImageConfig';
 
 function clampScale(v) {
@@ -47,6 +48,7 @@ const CALIBRATE_PARTS = [
 export default function PuppetStage({ keypointsRef, videoSizeRef, width, height, showDebug, headImage, torsoImage, upperArmLImage, upperArmRImage, lowerArmLImage, lowerArmRImage, neckImage }) {
   const [, tick] = useReducer((n) => n + 1, 0);
   const estimatorRef = useRef(null);
+  const rigSmootherRef = useRef(null);
   const hasImages = !!(headImage || torsoImage || neckImage || upperArmLImage || upperArmRImage || lowerArmLImage || lowerArmRImage);
   const [isCalibrate, setIsCalibrate] = useState(false);
   const [calibratePart, setCalibratePart] = useState('torso');
@@ -55,6 +57,9 @@ export default function PuppetStage({ keypointsRef, videoSizeRef, width, height,
 
   if (!estimatorRef.current) {
     estimatorRef.current = new BodyStateEstimator();
+  }
+  if (!rigSmootherRef.current) {
+    rigSmootherRef.current = new PuppetRigSmoother();
   }
 
   const onPartAdjust = useCallback((partKey, delta) => {
@@ -95,7 +100,10 @@ export default function PuppetStage({ keypointsRef, videoSizeRef, width, height,
     videoSize
   );
   const controls = bodyStateToControls(bodyState);
-  const puppet = buildPuppetRig(bodyState, controls, width, height);
+  const rawPuppet = buildPuppetRig(bodyState, controls, width, height);
+  const puppet = rigSmootherRef.current.smooth(rawPuppet, {
+    motionEnergy: bodyState?.motionEnergy ?? 0,
+  });
 
   return (
     <div style={{ position: 'relative', width, height }}>

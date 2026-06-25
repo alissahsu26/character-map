@@ -1,8 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import ThreeScene from './components/ThreeScene';
 import PuppetStage from './components/PuppetStage';
-import Puppet3Stage from './components/Puppet3Stage';
-import ManualPuppetStage from './components/ManualPuppetStage';
 import headImg from './character_puppet_assets/assets/character/head.png';
 import torsoImg from './character_puppet_assets/assets/character/torso.png';
 import upperArmLImg from './character_puppet_assets/assets/character/upperArmL.png';
@@ -10,37 +7,25 @@ import upperArmRImg from './character_puppet_assets/assets/character/upperArmR.p
 import lowerArmLImg from './character_puppet_assets/assets/character/lowerArmL.png';
 import lowerArmRImg from './character_puppet_assets/assets/character/lowerArmR.png';
 import neckImg from './character_puppet_assets/assets/character/neck.png';
-import PixiRigStage from './components/PixiRigStage';
 import KeypointsOverlay from './components/KeypointsOverlay';
 import HandOverlay from './components/HandOverlay';
-import TrackingDebugPanel from './components/TrackingDebugPanel';
 import PoseTracker, { STAGE_WIDTH, STAGE_HEIGHT } from './components/PoseTracker';
 import './App.css';
 
 export const VIEW_MODES = {
-  AVATAR: 'avatar',
-  PUPPET: 'puppet',
-  PUPPET2: 'puppet2',
-  PUPPET3: 'puppet3',
-  RIG: 'rig',
-  MANUAL: 'manual',
+  BASE: 'base',
+  CHARACTER: 'character',
 };
 
 export default function App() {
   const keypointsRef = useRef([]);
   const handsRef = useRef([]);
   const videoSizeRef = useRef({ width: 640, height: 480 });
-  const trackingStateRef = useRef(null);
   const fpsRef = useRef(0);
-  const [viewMode, setViewMode] = useState(VIEW_MODES.AVATAR);
+  const [viewMode, setViewMode] = useState(VIEW_MODES.BASE);
   const [showCameraSkeleton, setShowCameraSkeleton] = useState(true);
-  const [showBoneHelpers, setShowBoneHelpers] = useState(false);
-  const [showLandmarks, setShowLandmarks] = useState(false);
   const [showPuppetDebug, setShowPuppetDebug] = useState(false);
   const [status, setStatus] = useState({ isReady: false, error: null });
-
-  const isAvatarMode = viewMode === VIEW_MODES.AVATAR;
-  const isRigMode = viewMode === VIEW_MODES.RIG;
 
   const handlePoseUpdate = useCallback((_puppet, keypoints, size) => {
     keypointsRef.current = keypoints;
@@ -67,45 +52,17 @@ export default function App() {
         <div className="view-mode-switch" role="group" aria-label="View mode">
           <button
             type="button"
-            className={`view-mode-btn ${viewMode === VIEW_MODES.PUPPET ? 'active' : ''}`}
-            onClick={() => setViewMode(VIEW_MODES.PUPPET)}
+            className={`view-mode-btn ${viewMode === VIEW_MODES.BASE ? 'active' : ''}`}
+            onClick={() => setViewMode(VIEW_MODES.BASE)}
           >
-            Puppet
+            Base
           </button>
           <button
             type="button"
-            className={`view-mode-btn ${viewMode === VIEW_MODES.PUPPET2 ? 'active' : ''}`}
-            onClick={() => setViewMode(VIEW_MODES.PUPPET2)}
+            className={`view-mode-btn ${viewMode === VIEW_MODES.CHARACTER ? 'active' : ''}`}
+            onClick={() => setViewMode(VIEW_MODES.CHARACTER)}
           >
-            Puppet 2
-          </button>
-          <button
-            type="button"
-            className={`view-mode-btn ${viewMode === VIEW_MODES.PUPPET3 ? 'active' : ''}`}
-            onClick={() => setViewMode(VIEW_MODES.PUPPET3)}
-          >
-            Puppet 3
-          </button>
-          <button
-            type="button"
-            className={`view-mode-btn ${viewMode === VIEW_MODES.AVATAR ? 'active' : ''}`}
-            onClick={() => setViewMode(VIEW_MODES.AVATAR)}
-          >
-            Charlie
-          </button>
-          <button
-            type="button"
-            className={`view-mode-btn ${viewMode === VIEW_MODES.RIG ? 'active' : ''}`}
-            onClick={() => setViewMode(VIEW_MODES.RIG)}
-          >
-            Rig
-          </button>
-          <button
-            type="button"
-            className={`view-mode-btn ${viewMode === VIEW_MODES.MANUAL ? 'active' : ''}`}
-            onClick={() => setViewMode(VIEW_MODES.MANUAL)}
-          >
-            Manual Puppet
+            Character
           </button>
         </div>
         <div className="debug-toggles">
@@ -117,50 +74,20 @@ export default function App() {
             />
             Camera skeleton
           </label>
-          {isAvatarMode ? (
-            <>
-              <label className="skeleton-toggle">
-                <input
-                  type="checkbox"
-                  checked={showBoneHelpers}
-                  onChange={(e) => setShowBoneHelpers(e.target.checked)}
-                />
-                Avatar bones
-              </label>
-              <label className="skeleton-toggle">
-                <input
-                  type="checkbox"
-                  checked={showLandmarks}
-                  onChange={(e) => setShowLandmarks(e.target.checked)}
-                />
-                Landmarks
-              </label>
-            </>
-          ) : (
-            <label className="skeleton-toggle">
-              <input
-                type="checkbox"
-                checked={showPuppetDebug}
-                onChange={(e) => setShowPuppetDebug(e.target.checked)}
-              />
-              Show data
-            </label>
-          )}
+          <label className="skeleton-toggle">
+            <input
+              type="checkbox"
+              checked={showPuppetDebug}
+              onChange={(e) => setShowPuppetDebug(e.target.checked)}
+            />
+            Show data
+          </label>
         </div>
       </header>
 
       <main className="stage-container">
-        <div className={`stage${isAvatarMode ? ' mirror' : ''}`} style={isRigMode ? { background: '#1a1a2e' } : undefined}>
-          {viewMode === VIEW_MODES.AVATAR && (
-            <ThreeScene
-              keypointsRef={keypointsRef}
-              videoSizeRef={videoSizeRef}
-              trackingStateRef={trackingStateRef}
-              showBoneHelpers={showBoneHelpers}
-              showLandmarks={showLandmarks}
-            />
-          )}
-          {viewMode === VIEW_MODES.PUPPET && (
+        <div className="stage">
+          {viewMode === VIEW_MODES.BASE && (
             <PuppetStage
               keypointsRef={keypointsRef}
               videoSizeRef={videoSizeRef}
@@ -169,7 +96,7 @@ export default function App() {
               showDebug={showPuppetDebug}
             />
           )}
-          {viewMode === VIEW_MODES.PUPPET2 && (
+          {viewMode === VIEW_MODES.CHARACTER && (
             <PuppetStage
               keypointsRef={keypointsRef}
               videoSizeRef={videoSizeRef}
@@ -185,28 +112,6 @@ export default function App() {
               neckImage={neckImg}
             />
           )}
-          {viewMode === VIEW_MODES.PUPPET3 && (
-            <Puppet3Stage
-              keypointsRef={keypointsRef}
-              videoSizeRef={videoSizeRef}
-              width={STAGE_WIDTH}
-              height={STAGE_HEIGHT}
-              showDebug={showPuppetDebug}
-            />
-          )}
-          {viewMode === VIEW_MODES.RIG && (
-            <PixiRigStage
-              width={STAGE_WIDTH}
-              height={STAGE_HEIGHT}
-              keypointsRef={keypointsRef}
-              videoSizeRef={videoSizeRef}
-              showDebug={showPuppetDebug}
-            />
-          )}
-          {viewMode === VIEW_MODES.MANUAL && (
-            <ManualPuppetStage width={STAGE_WIDTH} height={STAGE_HEIGHT} />
-          )}
-          {isAvatarMode && <TrackingDebugPanel stateRef={trackingStateRef} fpsRef={fpsRef} />}
           <KeypointsOverlay
             keypointsRef={keypointsRef}
             videoSizeRef={videoSizeRef}

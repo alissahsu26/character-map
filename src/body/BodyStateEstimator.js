@@ -58,6 +58,8 @@ const CONTROL_ALPHA = {
   lowerArm: 0.18,
   wrists: 0.28,
 };
+/** Joint positions fed into the display puppet (lower alpha = less PNG jitter). */
+const DISPLAY_POS_ALPHA = 0.12;
 
 function ok(kp) {
   return kp != null && kp.score >= CONF;
@@ -79,6 +81,17 @@ function lerpVal(curr, prev, a) {
   if (curr == null) return prev ?? curr;
   if (prev == null) return curr;
   return curr * a + prev * (1 - a);
+}
+
+function lerpPoint(curr, prev, a) {
+  if (!curr) return prev ?? null;
+  if (!prev) return curr;
+  return {
+    x: lerpVal(curr.x, prev.x, a),
+    y: lerpVal(curr.y, prev.y, a),
+    score: curr.score ?? prev.score ?? 0,
+    handFused: curr.handFused ?? prev.handFused,
+  };
 }
 
 function lerpAngle(curr, prev, a) {
@@ -628,8 +641,8 @@ export class BodyStateEstimator {
     const smoothed = {
       torsoLean: lerpAngle(raw.torsoLean, prev.torsoLean, a),
       torsoScale: lerpVal(raw.torsoScale, prev.torsoScale, a),
-      shoulderCenter: raw.shoulderCenter,
-      hipCenter: raw.hipCenter,
+      shoulderCenter: lerpPoint(raw.shoulderCenter, prev.shoulderCenter, DISPLAY_POS_ALPHA),
+      hipCenter: lerpPoint(raw.hipCenter, prev.hipCenter, DISPLAY_POS_ALPHA),
     };
     this.controls.torso = smoothed;
     return smoothed;
@@ -645,15 +658,17 @@ export class BodyStateEstimator {
     const wristAlpha = CONTROL_ALPHA.wrists;
     const lowerAlpha = SIDE_PROFILE[side]?.lowerAlpha ?? CONTROL_ALPHA.lowerArm;
 
+    const posAlpha = DISPLAY_POS_ALPHA;
+
     const smoothed = {
       upperArmAngle: lerpAngle(raw.upperArmAngle, prev.upperArmAngle, armAlpha),
       lowerArmAngle: lerpAngle(raw.lowerArmAngle, prev.lowerArmAngle, lowerAlpha),
       elbowFlex: lerpAngle(raw.elbowFlex, prev.elbowFlex, lowerAlpha),
       armRaise: lerpVal(raw.armRaise, prev.armRaise, wristAlpha),
       armReach: lerpVal(raw.armReach, prev.armReach, wristAlpha),
-      shoulder: raw.shoulder,
-      elbow: raw.elbow,
-      wrist: raw.wrist,
+      shoulder: lerpPoint(raw.shoulder, prev.shoulder, posAlpha),
+      elbow: lerpPoint(raw.elbow, prev.elbow, posAlpha),
+      wrist: lerpPoint(raw.wrist, prev.wrist, posAlpha),
       confidence: raw.confidence,
       frozen: false,
     };
@@ -673,6 +688,10 @@ export class BodyStateEstimator {
       : ok(leftEye) ? leftEye
       : ok(rightEye) ? rightEye
       : null;
+
+    const prevHeadPx = this.controls.headPos;
+    const headPx = lerpPoint(headRaw, prevHeadPx, DISPLAY_POS_ALPHA);
+    if (headPx) this.controls.headPos = headPx;
 
     const shoulderMid = torso.shoulderCenter;
     const hipMid = torso.hipCenter;
@@ -708,7 +727,7 @@ export class BodyStateEstimator {
     this.motionEnergy = this.motionEnergy * 0.85 + targetEnergy * 0.15;
 
     return {
-      head: headRaw ? norm(headRaw, W, H) : null,
+      head: headPx ? norm(headPx, W, H) : null,
       shoulders: {
         left: left.shoulder ? norm(left.shoulder, W, H) : null,
         right: right.shoulder ? norm(right.shoulder, W, H) : null,
