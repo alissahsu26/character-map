@@ -41,6 +41,10 @@ export interface CharacterControls {
   torsoLean:     number;
   leftArmRaise:  number;
   rightArmRaise: number;
+  leftArmAngle?: number;
+  rightArmAngle?: number;
+  leftLowerArmAngle?: number;
+  rightLowerArmAngle?: number;
   [key: string]: unknown;
 }
 
@@ -122,6 +126,18 @@ export class CharacterRig {
    */
   update(controls: CharacterControls | null): void {
     if (!controls) return;
+
+    const leftFlex = clamp(
+      (controls.leftLowerArmAngle as number ?? 0) - (controls.leftArmAngle as number ?? 0),
+      PARTS.lowerArmL.limits?.min ?? -1.5,
+      PARTS.lowerArmL.limits?.max ?? 1.5,
+    );
+    const rightFlex = clamp(
+      (controls.rightLowerArmAngle as number ?? 0) - (controls.rightArmAngle as number ?? 0),
+      PARTS.lowerArmR.limits?.min ?? -1.5,
+      PARTS.lowerArmR.limits?.max ?? 1.5,
+    );
+
     this.applyPose({
       head:      controls.headTilt,
       torso:     controls.torsoLean,
@@ -129,8 +145,8 @@ export class CharacterRig {
       upperArmL: controls.leftArmRaise  * (PARTS.upperArmL.limits?.min ?? -1.8),
       // rightArmRaise 0–1 maps CW to the right-arm max limit
       upperArmR: controls.rightArmRaise * (PARTS.upperArmR.limits?.max ??  1.8),
-      lowerArmL: 0,
-      lowerArmR: 0,
+      lowerArmL: leftFlex,
+      lowerArmR: rightFlex,
     });
   }
 

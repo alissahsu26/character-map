@@ -1,5 +1,5 @@
-import { useEffect, useReducer } from 'react';
 import HandSkeletonDebug from './HandSkeletonDebug';
+import { useRefAnimationLoop } from '../hooks/useRefAnimationLoop';
 
 /** Reads hand landmarks from a ref and re-renders at display refresh rate. */
 export default function HandOverlay({
@@ -9,18 +9,7 @@ export default function HandOverlay({
   dstW,
   dstH,
 }) {
-  const [, tick] = useReducer((n) => n + 1, 0);
-
-  useEffect(() => {
-    if (!visible) return undefined;
-    let frame = 0;
-    const loop = () => {
-      tick();
-      frame = requestAnimationFrame(loop);
-    };
-    frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
-  }, [visible]);
+  useRefAnimationLoop(visible);
 
   if (!visible) return null;
 

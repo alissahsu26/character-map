@@ -11,12 +11,17 @@ const RELEASE_SCORE = 0.28;
 const ARM_ACQUIRE_SCORE = 0.38;
 const ARM_RELEASE_SCORE = 0.18;
 const ARM_INDICES = new Set([5, 6, 7, 8, 9, 10]); // shoulders → wrists
+const WRIST_INDICES = new Set([9, 10]);
+// Camera-facing arm (screen-right / index 6,8,10) drops out more often.
+const FACING_ARM_INDICES = new Set([6, 8, 10]);
 // Bridge brief dropouts (motion blur, a hand passing in front, a single bad
 // detector frame) by coasting on the last known velocity instead of
 // instantly snapping the bone to "missing".
 const COAST_MS = 320;
 const ARM_COAST_MS = 480;
+const FACING_ARM_COAST_MS = 620;
 const MAX_JUMP_RATIO = 0.28;
+const FACING_ARM_MAX_JUMP_RATIO = 0.34;
 
 class OneEuroFilter {
   constructor(minCutoff = 1.2, beta = 0.02, dCutoff = 1.0) {
@@ -78,15 +83,16 @@ export class KeypointSmoother {
   }
 
   smooth(raw, previous, frameW, frameH) {
-    const maxJump = Math.min(frameW, frameH) * MAX_JUMP_RATIO;
     const t = performance.now();
 
     return raw.map((kp, i) => {
       const track = this.track[i];
       const isArm = ARM_INDICES.has(i);
+      const isFacingArm = FACING_ARM_INDICES.has(i);
       const acquireScore = isArm ? ARM_ACQUIRE_SCORE : ACQUIRE_SCORE;
-      const releaseScore = isArm ? ARM_RELEASE_SCORE : RELEASE_SCORE;
-      const coastMs = isArm ? ARM_COAST_MS : COAST_MS;
+      const releaseScore = isFacingArm ? ARM_RELEASE_SCORE * 0.85 : (isArm ? ARM_RELEASE_SCORE : RELEASE_SCORE);
+      const coastMs = isFacingArm ? FACING_ARM_COAST_MS : (isArm ? ARM_COAST_MS : COAST_MS);
+      const maxJump = Math.min(frameW, frameH) * (isFacingArm ? FACING_ARM_MAX_JUMP_RATIO : MAX_JUMP_RATIO);
 
       if (kp.score >= acquireScore) {
         track.trusted = true;
@@ -139,7 +145,12 @@ export class KeypointSmoother {
       track.lastY = fy;
       track.lastGoodT = t;
 
-      return { ...kp, x: fx, y: fy, score: Math.max(kp.score, acquireScore) };
+      const fusedScore = kp.handFused ? Math.max(kp.score, 0.88) : kp.score;
+      const outScore = WRIST_INDICES.has(i)
+        ? Math.max(fusedScore, acquireScore)
+        : Math.max(kp.score, acquireScore);
+
+      return { ...kp, x: fx, y: fy, score: outScore };
     });
   }
 }

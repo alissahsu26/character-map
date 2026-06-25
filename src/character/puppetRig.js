@@ -25,21 +25,33 @@ export function buildPuppetRig(bodyState, controls, dstW, dstH) {
   const torsoCx = (shoulderMidPx.x + hipMidPx.x) / 2;
   const torsoCy = (shoulderMidPx.y + hipMidPx.y) / 2;
 
-  function resolveWrist(elbowPx, wristPx, shoulderPx, lowerArmAngle) {
-    if (wristPx) return wristPx;
-    if (!elbowPx) return null;
+  function resolveWrist(elbowPx, wristPx, shoulderPx, lowerArmAngle, wristConfidence) {
+    if (!elbowPx) return wristPx ?? null;
 
     const upperLen = shoulderPx
       ? Math.hypot(elbowPx.x - shoulderPx.x, elbowPx.y - shoulderPx.y)
       : dstH * 0.14;
     const lowerLen = upperLen * 0.85;
 
+    let angleWrist = null;
     if (lowerArmAngle != null) {
-      return {
+      angleWrist = {
         x: elbowPx.x + Math.cos(lowerArmAngle) * lowerLen,
         y: elbowPx.y + Math.sin(lowerArmAngle) * lowerLen,
       };
     }
+
+    const trustThreshold = 0.55;
+    if (wristPx && angleWrist && wristConfidence != null && wristConfidence < trustThreshold) {
+      const w = wristConfidence / trustThreshold;
+      return {
+        x: angleWrist.x * (1 - w) + wristPx.x * w,
+        y: angleWrist.y * (1 - w) + wristPx.y * w,
+      };
+    }
+
+    if (wristPx) return wristPx;
+    if (angleWrist) return angleWrist;
 
     if (shoulderPx) {
       const dir = Math.atan2(elbowPx.y - shoulderPx.y, elbowPx.x - shoulderPx.x);
@@ -55,7 +67,7 @@ export function buildPuppetRig(bodyState, controls, dstW, dstH) {
   function armSegs(shoulderNorm, elbowNorm, wristNorm, lowerArmAngle) {
     const s = px(shoulderNorm);
     const e = px(elbowNorm);
-    const w = resolveWrist(e, px(wristNorm), s, lowerArmAngle);
+    const w = resolveWrist(e, px(wristNorm), s, lowerArmAngle, wristNorm?.confidence);
     const fallback = { x1: 0, y1: 0, x2: 0, y2: 0 };
     if (!s || !e) return { upper: fallback, lower: fallback, wrist: null };
     return {

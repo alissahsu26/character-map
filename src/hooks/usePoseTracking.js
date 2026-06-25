@@ -106,9 +106,9 @@ export function usePoseTracking(externalFpsRef) {
           },
           runningMode: 'VIDEO',
           numHands: 2,
-          minHandDetectionConfidence: 0.55,
-          minHandPresenceConfidence: 0.55,
-          minTrackingConfidence: 0.65,
+          minHandDetectionConfidence: 0.45,
+          minHandPresenceConfidence: 0.45,
+          minTrackingConfidence: 0.5,
         });
 
         if (!mountedRef.current || session !== initSessionRef.current) {

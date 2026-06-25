@@ -512,39 +512,6 @@ export default function CharacterPuppet({
         />
       )}
 
-      {lowerArmLImage ? (
-        <SegmentLimbImage
-          {...puppet.leftLowerArm}
-          href={lowerArmLImage}
-          armThickness={armThickness}
-          widthFactor={5}
-          {...getNudge('lowerArmL')}
-          opacity={isCalibrating('lowerArmL') ? 0.85 : 1}
-        />
-      ) : (
-        <ArmCapsule
-          {...puppet.leftLowerArm}
-          thickness={armThickness * 0.85}
-          color="#60a5fa"
-        />
-      )}
-      {lowerArmRImage ? (
-        <SegmentLimbImage
-          {...puppet.rightLowerArm}
-          href={lowerArmRImage}
-          armThickness={armThickness}
-          widthFactor={5}
-          {...getNudge('lowerArmR')}
-          opacity={isCalibrating('lowerArmR') ? 0.85 : 1}
-        />
-      ) : (
-        <ArmCapsule
-          {...puppet.rightLowerArm}
-          thickness={armThickness * 0.85}
-          color="#f472b6"
-        />
-      )}
-
       <g transform={`rotate(${headAngleDeg + getNudge('head').nudgeRot} ${head.cx} ${head.cy})`}>
         {headImage ? (() => {
           const { nudgeX, nudgeY, nudgeScale } = getNudge('head');
@@ -581,6 +548,39 @@ export default function CharacterPuppet({
           </>
         )}
       </g>
+
+      {lowerArmLImage ? (
+        <SegmentLimbImage
+          {...puppet.leftLowerArm}
+          href={lowerArmLImage}
+          armThickness={armThickness}
+          widthFactor={5}
+          {...getNudge('lowerArmL')}
+          opacity={isCalibrating('lowerArmL') ? 0.85 : 1}
+        />
+      ) : (
+        <ArmCapsule
+          {...puppet.leftLowerArm}
+          thickness={armThickness * 0.85}
+          color="#60a5fa"
+        />
+      )}
+      {lowerArmRImage ? (
+        <SegmentLimbImage
+          {...puppet.rightLowerArm}
+          href={lowerArmRImage}
+          armThickness={armThickness}
+          widthFactor={5}
+          {...getNudge('lowerArmR')}
+          opacity={isCalibrating('lowerArmR') ? 0.85 : 1}
+        />
+      ) : (
+        <ArmCapsule
+          {...puppet.rightLowerArm}
+          thickness={armThickness * 0.85}
+          color="#f472b6"
+        />
+      )}
 
       {puppet.leftHand && (
         <circle

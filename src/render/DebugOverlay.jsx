@@ -52,7 +52,9 @@ function Row({ label, value, bar = false }) {
 
 function fmtConf(c) {
   if (!c) return '—';
-  return `S${(c.shoulder ?? 0).toFixed(2)} E${(c.elbow ?? 0).toFixed(2)} W${(c.wrist ?? 0).toFixed(2)}`;
+  const w = (c.wrist ?? 0).toFixed(2);
+  const wTag = c.handFused ? `${w}*` : w;
+  return `S${(c.shoulder ?? 0).toFixed(2)} E${(c.elbow ?? 0).toFixed(2)} W${wTag}`;
 }
 
 export default function DebugOverlay({ bodyState, controls, estimatorDebug }) {
@@ -76,6 +78,9 @@ export default function DebugOverlay({ bodyState, controls, estimatorDebug }) {
           <div style={S.row}>
             <span style={S.label}>R conf</span>
             <span style={S.val}>{fmtConf(estimatorDebug.rightConfidence)}</span>
+          </div>
+          <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+            W* = hand tracker fused
           </div>
         </>
       )}

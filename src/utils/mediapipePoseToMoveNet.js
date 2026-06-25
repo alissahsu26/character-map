@@ -34,10 +34,10 @@ const BLAZEPOSE_MAP = {
   right_shoulder: 12,
   left_elbow: 13,
   right_elbow: 14,
-  // Average wrist + finger bases for a stabler wrist estimate when the wrist
-  // landmark alone is partially occluded (common on the camera-facing side).
-  left_wrist: [15, 17, 19],
-  right_wrist: [16, 18, 20],
+  // Average wrist + finger bases (+ thumb) for a stabler wrist estimate when the
+  // wrist landmark alone is partially occluded (common on the camera-facing side).
+  left_wrist: [15, 17, 19, 21],
+  right_wrist: [16, 18, 20, 22],
   left_hip: 23,
   right_hip: 24,
   left_knee: 25,
@@ -94,37 +94,88 @@ function pickLandmark(landmarks, indexOrIndices, { arm = false } = {}) {
 
 /**
  * Boost pose wrist keypoints with the dedicated hand model when available.
- * Hand tracking is much more reliable for wrists than pose alone.
- *
- * @param {Array<{ name: string, x: number, y: number, score: number }>} keypoints
- * @param {Array<{ handedness: string, landmarks: Array<{ x: number, y: number }> }>} hands
+ * Assigns each hand to a side by nearest elbow (pose wrists are often wrong).
  */
 export function fuseHandWristsIntoKeypoints(keypoints, hands) {
   if (!keypoints?.length || !hands?.length) return keypoints;
 
   const byName = Object.fromEntries(keypoints.map((kp) => [kp.name, { ...kp }]));
   const HAND_SCORE = 0.88;
+  const le = byName.left_elbow;
+  const re = byName.right_elbow;
+  const ls = byName.left_shoulder;
+  const rs = byName.right_shoulder;
 
-  for (const hand of hands) {
-    const wrist = hand.landmarks?.[0];
-    if (!wrist) continue;
+  function distToElbow(pt, side) {
+    const el = side === 'left' ? le : re;
+    if (!el) return Infinity;
+    return Math.hypot(pt.x - el.x, pt.y - el.y);
+  }
 
-    const label = (hand.handedness ?? '').toLowerCase();
-    const side = label.startsWith('left') ? 'left' : 'right';
+  function sideFromGeometry(pt) {
+    if (le && re) {
+      return distToElbow(pt, 'left') <= distToElbow(pt, 'right') ? 'left' : 'right';
+    }
+    if (ls && rs) {
+      return pt.x < (ls.x + rs.x) / 2 ? 'left' : 'right';
+    }
+    return null;
+  }
+
+  const detected = hands
+    .map((hand) => {
+      const wrist = hand.landmarks?.[0];
+      if (!wrist) return null;
+      return { hand, wrist };
+    })
+    .filter(Boolean);
+
+  if (!detected.length) return keypoints;
+
+  /** @type {Array<{ hand: object, wrist: object, side: string }>} */
+  let assigned = [];
+
+  if (detected.length === 1) {
+    const label = (detected[0].hand.handedness ?? '').toLowerCase();
+    const labelSide = label.startsWith('left') ? 'left' : 'right';
+    assigned = [{
+      ...detected[0],
+      side: sideFromGeometry(detected[0].wrist) ?? labelSide,
+    }];
+  } else {
+    const [a, b] = detected;
+    const costSame = distToElbow(a.wrist, 'left') + distToElbow(b.wrist, 'right');
+    const costCross = distToElbow(a.wrist, 'right') + distToElbow(b.wrist, 'left');
+    if (costSame <= costCross) {
+      assigned = [
+        { ...a, side: 'left' },
+        { ...b, side: 'right' },
+      ];
+    } else {
+      assigned = [
+        { ...a, side: 'right' },
+        { ...b, side: 'left' },
+      ];
+    }
+  }
+
+  for (const { wrist, side } of assigned) {
     const name = `${side}_wrist`;
     const existing = byName[name];
+    const facingBlend = side === 'right' ? 0.88 : 0.78;
 
-    if (!existing || existing.score < HAND_SCORE * 0.55) {
-      byName[name] = { name, x: wrist.x, y: wrist.y, score: HAND_SCORE };
+    if (!existing || existing.score < HAND_SCORE * 0.7) {
+      byName[name] = { name, x: wrist.x, y: wrist.y, score: HAND_SCORE, handFused: true };
       continue;
     }
 
-    const blend = existing.score < HAND_SCORE ? 0.72 : 0.45;
+    const blend = existing.score < HAND_SCORE ? facingBlend : (side === 'right' ? 0.62 : 0.5);
     byName[name] = {
       name,
       x: existing.x * (1 - blend) + wrist.x * blend,
       y: existing.y * (1 - blend) + wrist.y * blend,
-      score: Math.max(existing.score, HAND_SCORE),
+      score: HAND_SCORE,
+      handFused: true,
     };
   }
 

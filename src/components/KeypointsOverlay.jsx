@@ -1,5 +1,5 @@
-import { useEffect, useReducer } from 'react';
 import SkeletonDebug from './SkeletonDebug';
+import { useRefAnimationLoop } from '../hooks/useRefAnimationLoop';
 import {
   derivedLandmarksForDebug,
   extractHeadNeckLandmarks,
@@ -15,23 +15,15 @@ export default function KeypointsOverlay({
   dstW,
   dstH,
 }) {
-  const [, tick] = useReducer((n) => n + 1, 0);
-
-  useEffect(() => {
-    if (!visible) return undefined;
-    let frame = 0;
-    const loop = () => {
-      tick();
-      frame = requestAnimationFrame(loop);
-    };
-    frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
-  }, [visible]);
+  useRefAnimationLoop(visible);
 
   if (!visible) return null;
 
   const keypoints = keypointsRef.current;
   const videoSize = videoSizeRef.current;
+
+  if (!keypoints?.length) return null;
+
   const landmarks = extractHeadNeckLandmarks(keypoints, { swapHands: false });
   const displayKeypoints = mergePoseKeypointsForDisplay(
     keypoints,
